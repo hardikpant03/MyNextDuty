@@ -38,11 +38,11 @@ dependencyManagement {
 
 dependencies {
 
-	implementation 'org.springframework.boot:spring-boot-starter-security'
+//	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation group: 'mysql', name: 'mysql-connector-java', version:'8.0.33'
+    implementation 'org.postgresql:postgresql:42.7.7'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -50,13 +50,13 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.0'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.5'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.5'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'tools.jackson.core:jackson-core:3.0.3'
+    implementation 'tools.jackson.core:jackson-databind:3.0.3'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:3.0-rc5'
+    implementation 'tools.jackson.datatype:jackson-datatype-jsr353:3.0.3'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
+//    testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
