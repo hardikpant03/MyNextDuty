@@ -10,10 +10,17 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BlackListTokenServiceImpl implements BlackListTokenService {
   @Override
-  public boolean checkTokenExist(String token) {
+  public boolean isTokenBlackListed(String token) {
     return false;
   }
 
   @Override
-  public void blacklistToken(String token) {}
+  public boolean blackListRefreshToken(String refreshToken) {
+    return false;
+  }
+
+  @Override
+  public boolean blackListAccessToken(String accessToken) {
+    return false;
+  }
 }

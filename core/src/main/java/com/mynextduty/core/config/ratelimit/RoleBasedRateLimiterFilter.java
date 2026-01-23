@@ -1,4 +1,4 @@
-package com.mynextduty.core.config.rateLimit;
+package com.mynextduty.core.config.ratelimit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mynextduty.core.dto.auth.CustomUserDetails;

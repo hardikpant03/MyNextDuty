@@ -1,7 +1,9 @@
 package com.mynextduty.core.service;
 
 public interface BlackListTokenService {
-  boolean checkTokenExist(String token);
+  boolean isTokenBlackListed(String token);
 
-  void blacklistToken(String token);
+  boolean blackListRefreshToken(String refreshToken);
+
+  boolean blackListAccessToken(String accessToken);
 }

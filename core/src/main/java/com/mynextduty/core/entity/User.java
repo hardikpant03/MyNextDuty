@@ -78,6 +78,7 @@ public class User {
   private LocalDateTime createdAt = LocalDateTime.now();
 
   private LocalDateTime updatedAt;
+  private LocalDateTime lastAccessTime;
 
   @PreUpdate
   public void preUpdate() {

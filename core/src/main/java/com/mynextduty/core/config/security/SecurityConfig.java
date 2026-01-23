@@ -1,6 +1,6 @@
 package com.mynextduty.core.config.security;
 
-import com.mynextduty.core.config.rateLimit.RoleBasedRateLimiterFilter;
+import com.mynextduty.core.config.ratelimit.RoleBasedRateLimiterFilter;
 import com.mynextduty.core.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

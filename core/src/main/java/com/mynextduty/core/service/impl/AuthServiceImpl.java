@@ -1,39 +1,58 @@
 package com.mynextduty.core.service.impl;
 
-import static com.mynextduty.core.utils.Constants.PUBLIC_KEY_PATH;
-import static com.mynextduty.core.utils.Constants.REFRESH_TOKEN;
-
+import com.mynextduty.core.config.security.JwtUtil;
+import com.mynextduty.core.config.security.PassDecryptor;
+import com.mynextduty.core.config.security.PassEncoder;
 import com.mynextduty.core.dto.GlobalMessageDTO;
 import com.mynextduty.core.dto.auth.AuthRequestDto;
 import com.mynextduty.core.dto.auth.AuthResponseDto;
+import com.mynextduty.core.dto.auth.CustomUserDetails;
 import com.mynextduty.core.dto.auth.RegisterRequestDto;
-import com.mynextduty.core.dto.auth.UserProfileDto;
 import com.mynextduty.core.entity.User;
 import com.mynextduty.core.exception.GenericApplicationException;
+import com.mynextduty.core.exception.InvalidCredentialsException;
 import com.mynextduty.core.exception.KeyLoadingException;
+import com.mynextduty.core.exception.TokenException;
 import com.mynextduty.core.exception.UserNotFoundException;
 import com.mynextduty.core.repository.AuthRepository;
+import com.mynextduty.core.repository.UserRepository;
 import com.mynextduty.core.service.AuthService;
-import com.mynextduty.core.config.security.JwtUtil;
+import com.mynextduty.core.service.BlackListTokenService;
+import com.mynextduty.core.service.CustomUserDetailsService;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import static com.mynextduty.core.utils.Constants.PUBLIC_KEY_PATH;
+import static com.mynextduty.core.utils.Constants.REFRESH_TOKEN;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
+
+  private final AuthenticationManager authenticationManager;
   private final AuthRepository authRepository;
-  private final PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final PassEncoder passEncoder;
+  private final PassDecryptor passDecryptor;
   private final JwtUtil jwtUtil;
+  private final CustomUserDetailsService customUserDetailsService;
+  private final BlackListTokenService blacklistToken;
 
   @Override
   public String publicKey() {
@@ -53,135 +72,121 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
+  @Transactional
   public AuthResponseDto register(
       RegisterRequestDto registerRequestDto, HttpServletResponse httpServletResponse) {
-    String email = registerRequestDto.getEmail();
-
-    // Check if user already exists
-    if (authRepository.getByEmail(email).isPresent()) {
-      throw new GenericApplicationException("User with email " + email + " already exists");
+    if (authRepository.getByEmail(registerRequestDto.getEmail()).isPresent()) {
+      throw new GenericApplicationException("User already exists.");
     }
-
-    // Create new user
     User user =
         User.builder()
-            .email(email)
-            .password(passwordEncoder.encode(registerRequestDto.getPassword()))
+            .email(registerRequestDto.getEmail())
+            .password(registerRequestDto.getPassword())
             .firstName(registerRequestDto.getFirstName())
             .lastName(registerRequestDto.getLastName())
             .isVerified(false)
             .build();
-    user = authRepository.save(user);
-    log.info("New user registered with email: {}", email);
-    // Generate tokens
-    String accessToken = jwtUtil.generateToken(email);
-    String refreshToken = jwtUtil.generateRefreshToken(email);
-    // Set refresh token cookie
+    authRepository.save(user);
+    CustomUserDetails customUserDetails =
+        CustomUserDetails.builder()
+            .username(registerRequestDto.getEmail())
+            .password(registerRequestDto.getPassword())
+            .enabled(true)
+            .build();
+    log.info("New user registered with email: {}", registerRequestDto.getEmail());
+    String accessToken = jwtUtil.generateToken(customUserDetails);
+    String refreshToken = jwtUtil.generateRefreshToken(customUserDetails);
     setRefreshTokenCookie(httpServletResponse, refreshToken);
     return AuthResponseDto.builder()
-        .email(user.getEmail())
+        .email(registerRequestDto.getEmail())
         .accessToken(accessToken)
         .refreshToken(refreshToken)
         .build();
   }
 
   @Override
+  @Transactional
   public AuthResponseDto login(
       AuthRequestDto authRequestDto, HttpServletResponse httpServletResponse) {
-    String email = authRequestDto.getEmail();
-    String password = authRequestDto.getPassword();
+    try {
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(
+              authRequestDto.getEmail(),
+              passDecryptor.decryptPassword(authRequestDto.getPassword())));
+    } catch (BadCredentialsException e) {
+      log.warn("Bad credentials for user '{}'", authRequestDto.getEmail());
+      throw new InvalidCredentialsException("Invalid credentials.");
+    }
     User user =
-        authRepository
-            .getByEmail(email)
+        userRepository
+            .findByEmail(authRequestDto.getEmail())
             .orElseThrow(
                 () -> {
-                  log.warn("Login attempt with non-existent email: {}", email);
-                  return new UserNotFoundException("Invalid email or password");
+                  log.warn("User not found: {}", authRequestDto.getEmail());
+                  return new UserNotFoundException("User not found.");
                 });
-    // Verify password
-    if (!passwordEncoder.matches(password, user.getPassword())) {
-      log.warn("Invalid password attempt for email: {}", email);
-      throw new GenericApplicationException("Invalid email or password");
-    }
-    // Generate tokens
-    String accessToken = jwtUtil.generateToken(email);
-    String refreshToken = jwtUtil.generateRefreshToken(email);
-    // Set refresh token cookie
-    setRefreshTokenCookie(httpServletResponse, refreshToken);
-    log.info("User logged in successfully: {}", email);
+    user.setLastAccessTime(LocalDateTime.now());
+    userRepository.save(user);
+    CustomUserDetails customUserDetails =
+        (CustomUserDetails) customUserDetailsService.loadUserByUsername(authRequestDto.getEmail());
+    String token = jwtUtil.generateToken(customUserDetails);
+    String refreshToken = jwtUtil.generateRefreshToken(customUserDetails);
+    log.info("User '{}' logged in successfully", authRequestDto.getEmail());
     return AuthResponseDto.builder()
+        .id(user.getId().toString())
         .email(user.getEmail())
-        .accessToken(accessToken)
+        .accessToken(token)
         .refreshToken(refreshToken)
         .build();
   }
 
   @Override
-  public AuthResponseDto refreshToken(
-      String refreshToken, HttpServletResponse httpServletResponse) {
+  public AuthResponseDto refreshToken(HttpServletRequest request) {
+    String oldRefreshToken = null;
+    if (request.getCookies() != null) {
+      for (Cookie cookie : request.getCookies()) {
+        if (REFRESH_TOKEN.equals(cookie.getName())) {
+          oldRefreshToken = cookie.getValue();
+          break;
+        }
+      }
+    }
+    if (oldRefreshToken == null) {
+      log.info("Missing refresh token in cookies");
+      throw new TokenException("Invalid refresh token");
+    }
     try {
-      if (jwtUtil.isTokenExpired(refreshToken)) {
-        throw new GenericApplicationException("Refresh token expired.");
+      String email = jwtUtil.extractUsername(oldRefreshToken);
+      if (jwtUtil.isTokenExpired(oldRefreshToken)) {
+        log.info("Refresh token expired for user: {}", email);
+        throw new ExpiredJwtException(null, null, "Refresh token expired");
       }
-      String email = jwtUtil.extractUsername(refreshToken);
-      if (!jwtUtil.validateToken(refreshToken, email)) {
-        throw new GenericApplicationException("Invalid or expired refresh token");
-      }
-      // Verify user still exists
-      User user =
-          authRepository
-              .getByEmail(email)
-              .orElseThrow(() -> new UserNotFoundException("User not found"));
-      // Generate new tokens
-      String newAccessToken = jwtUtil.generateToken(email);
-      String newRefreshToken = jwtUtil.generateRefreshToken(email);
-      // Set new refresh token cookie
-      setRefreshTokenCookie(httpServletResponse, newRefreshToken);
+      blacklistToken.blackListRefreshToken(oldRefreshToken);
+      CustomUserDetails userDetails =
+          (CustomUserDetails) customUserDetailsService.loadUserByUsername(email);
+      String newAccessToken = jwtUtil.generateToken(userDetails);
+      String newRefreshToken = jwtUtil.generateRefreshToken(userDetails);
       return AuthResponseDto.builder()
-          .email(user.getEmail())
+          .email(email)
           .accessToken(newAccessToken)
           .refreshToken(newRefreshToken)
           .build();
-    } catch (Exception e) {
-      log.error("Error refreshing token", e);
-      throw new GenericApplicationException("Failed to refresh token");
+    } catch (TokenException | ExpiredJwtException e) {
+      blacklistToken.blackListRefreshToken(oldRefreshToken);
+      throw e;
+    } catch (Exception ex) {
+      throw new GenericApplicationException("Unable to refresh token", ex);
     }
-  }
-
-  @Override
-  public UserProfileDto getCurrentUser(String email) {
-    User user =
-        authRepository
-            .getByEmail(email)
-            .orElseThrow(() -> new UserNotFoundException("User not found"));
-    return UserProfileDto.builder()
-        .id(user.getId())
-        .email(user.getEmail())
-        .firstName(user.getFirstName())
-        .lastName(user.getLastName())
-        .currentOccupation(user.getCurrentOccupation())
-        .dateOfBirth(user.getDateOfBirth())
-        .lifeStage(user.getLifeStage())
-        .monthlyIncome(user.getMonthlyIncome())
-        .educationLevel(
-            user.getEducationLevel() != null ? user.getEducationLevel().getLevelName() : null)
-        .isVerified(user.isVerified())
-        .build();
   }
 
   @Override
   public GlobalMessageDTO logout(HttpServletRequest httpServletRequest) {
-    // Clear refresh token cookie
-    // In a real implementation, you might want to blacklist the tokens
-    log.info("User logged out successfully");
-    return GlobalMessageDTO.builder().message("Logout successfully").build();
+    return null;
   }
 
   @Override
   public GlobalMessageDTO verifyEmail(String token) {
-    // Implementation for email verification
-    // This would typically involve validating a verification token sent via email
-    return GlobalMessageDTO.builder().message("Email verified successfully").build();
+    return null;
   }
 
   private void setRefreshTokenCookie(HttpServletResponse httpServletResponse, String refreshToken) {
@@ -191,7 +196,7 @@ public class AuthServiceImpl implements AuthService {
             .secure(true)
             .path("/")
             .sameSite("Strict")
-            .maxAge(3 * 24 * 60 * 60L) // 3 days
+            .maxAge(jwtUtil.getRefreshTokenExpiration())
             .build();
     httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
   }

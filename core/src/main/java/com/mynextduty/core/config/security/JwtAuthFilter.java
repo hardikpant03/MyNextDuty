@@ -46,7 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
     String token = authHeader.substring(7).trim();
     try {
-      if (blackListTokenService.checkTokenExist(token)) {
+      if (blackListTokenService.isTokenBlackListed(token)) {
         log.warn("Blacklisted token used: {}", token);
         jwtUtil.writeCustomErrorResponse(
             response,
@@ -70,16 +70,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       }
     } catch (ExpiredJwtException e) {
       log.warn("Expired token: {}", token);
-      if (!blackListTokenService.checkTokenExist(token)) {
-        blackListTokenService.blacklistToken(token);
-        log.info("Expired token blacklisted: {}", token);
+      if (!blackListTokenService.isTokenBlackListed(token)
+          && blackListTokenService.blackListAccessToken(token)) {
+        log.info("Expired access token blacklisted: {}", token);
       }
       jwtUtil.writeCustomErrorResponse(
           response,
           HttpServletResponse.SC_UNAUTHORIZED,
           1001,
-          "TokenExpired",
-          "Your access token has expired. Please refresh.");
+          "AccessTokenExpired",
+          "Access token has expired");
       return;
     } catch (Exception e) {
       log.error("Token validation failed", e);
@@ -87,7 +87,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
           response,
           HttpServletResponse.SC_UNAUTHORIZED,
           4003,
-          "InvalidToken",
+          "InvalidAccessToken",
           "Your access token was invalid or tampered. Please login again.");
       return;
     }

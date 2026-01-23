@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -23,9 +24,12 @@ import org.springframework.stereotype.Component;
 public class JwtUtil {
 
   private final String secretKey;
+  @Getter
+  private final Long refreshTokenExpiration;
 
-  public JwtUtil(@Value("${core.jwt.secret:}") String secretKey) {
+  public JwtUtil(@Value("${core.jwt.secret:}") String secretKey, @Value("${core.jwt.refresh.expiration:}") Long refreshTokenExpiration)  {
     this.secretKey = secretKey;
+    this.refreshTokenExpiration=refreshTokenExpiration;
   }
 
   public String extractUsername(String token) {

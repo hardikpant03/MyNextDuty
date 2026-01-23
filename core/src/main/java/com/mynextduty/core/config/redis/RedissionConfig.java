@@ -16,7 +16,7 @@ public class RedissionConfig {
   @Bean
   public RedissonClient redissonClient(RedisProperties prop) {
     Config config = new Config();
-    config.useSingleServer().setAddress("rediss://" + prop.getHost() + ":" + prop.getPort());
+    config.useSingleServer().setAddress("redis://" + prop.getHost() + ":" + prop.getPort());
     log.info("Configuring redis server with address: {}", config.useSingleServer().getAddress());
     if (!prop.getUsername().isEmpty()) {
       config.useSingleServer().setUsername(prop.getUsername());

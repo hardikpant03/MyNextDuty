@@ -16,8 +16,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
   List<User> findByLifeStage(LifeStage lifeStage);
 
   @Query(
-      "SELECT u FROM User u WHERE u.dateOfBirth IS NOT NULL AND "
-          + "FUNCTION('YEAR', CURRENT_DATE) - FUNCTION('YEAR', u.dateOfBirth) BETWEEN :minAge AND :maxAge")
+      value = "SELECT u FROM User u WHERE u.dateOfBirth IS NOT NULL AND "
+          + "FUNCTION('YEAR', CURRENT_DATE) - FUNCTION('YEAR', u.dateOfBirth) BETWEEN :minAge AND :maxAge",nativeQuery = true)
   List<User> findByAgeRange(@Param("minAge") int minAge, @Param("maxAge") int maxAge);
 
   boolean existsByEmail(String email);

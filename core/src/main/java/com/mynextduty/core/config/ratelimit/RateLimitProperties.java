@@ -1,4 +1,4 @@
-package com.mynextduty.core.config.rateLimit;
+package com.mynextduty.core.config.ratelimit;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
