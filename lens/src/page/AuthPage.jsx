@@ -7,7 +7,7 @@ import Loader from "../components/common/Loader";
 
 export const AuthPage = () => {
   const [mode, setMode] = useState("login");
-  const [values, setValues] = useState({});
+  const [values, setValues] = useState({email:"",password:""});
   const [errors, setErrors] = useState({});
 
   const { login, signup, loading, error } = useAuth();

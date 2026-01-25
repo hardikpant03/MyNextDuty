@@ -7,6 +7,10 @@ export const API_URLS = {
     LOGOUT: "/auth/logout",
   },
   USER: {
+    SIGNUP: "/user/register",
     PROFILE: "/user/profile",
+  },
+  LOCATION: {
+    USER: "/location/user",
   },
 };

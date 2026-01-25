@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import { ACCESS_TOKEN_KEY } from "../util/constants";
+import { ACCESS_TOKEN_KEY } from "./constants";
 
 export const getToken = () => {
   try {

@@ -17,7 +17,6 @@ export const useAuth = () => {
 
     try {
       const response = await authService.login(values);
-
       dispatch(
         authLoginSuccess({
           user: response.data.user,

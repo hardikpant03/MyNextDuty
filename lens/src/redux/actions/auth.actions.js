@@ -1,11 +1,10 @@
 // redux/actions/auth.actions.js
-
-export const AUTH_LOGIN_REQUEST = "AUTH_LOGIN_REQUEST";
-export const AUTH_LOGIN_SUCCESS = "AUTH_LOGIN_SUCCESS";
-export const AUTH_LOGIN_FAILURE = "AUTH_LOGIN_FAILURE";
-
-export const AUTH_LOGOUT = "AUTH_LOGOUT";
-
+import {
+  AUTH_LOGIN_REQUEST,
+  AUTH_LOGIN_SUCCESS,
+  AUTH_LOGIN_FAILURE,
+  AUTH_LOGOUT,
+} from "../../util/constants";
 export const authLoginRequest = () => ({
   type: AUTH_LOGIN_REQUEST,
 });

@@ -1,8 +1,8 @@
 import axios from "axios";
 import { navigate } from "../navigation.service";
 import { persistor } from "../../redux/store";
-import { CORE_BASE_URL, API_URLS } from "../apiUrls";
-import { setToken } from "../tokenService";
+import { CORE_BASE_URL, API_URLS } from "../../api/apiUrls";
+import { setToken } from "../../util/tokenService";
 
 let isRefreshing = false;
 let failedQueue = [];

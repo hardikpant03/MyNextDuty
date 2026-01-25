@@ -1,4 +1,4 @@
-import { getToken } from "../tokenService";
+import { getToken } from "../../util/tokenService";
 
 export const authInterceptor = (config) => {
   const token = getToken();

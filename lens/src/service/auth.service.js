@@ -1,16 +1,20 @@
-import api from "../service/axiosInstance";
-import { API_URLS } from "../service/apiUrls";
+import api from "../api/axiosInstance";
+import { API_URLS } from "../api/apiUrls";
 
 export const authService = {
   login(payload) {
-    return api.post("/auth/login", payload);
+    return api.post(API_URLS.AUTH.LOGIN, payload);
   },
 
   signup(payload) {
-    return api.post("/auth/signup", payload);
+    return api.post(API_URLS.USER.SIGNUP, payload);
   },
 
   logout() {
-    return api.post("/auth/logout");
+    return api.post(API_URLS.AUTH.LOGOUT);
+  },
+
+  refreshToken() {
+    return api.post(API_URLS.AUTH.REFRESH);
   },
 };

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { CORE_BASE_URL } from "./apiUrls";
-import { setupInterceptors } from "./interceptors";
+import { setupInterceptors } from "../service/interceptors";
 
 const api = axios.create({
   baseURL: CORE_BASE_URL,
