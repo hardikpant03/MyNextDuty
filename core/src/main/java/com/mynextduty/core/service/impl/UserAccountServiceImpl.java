@@ -27,7 +27,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     User user =
         User.builder()
             .email(registerRequestDto.getEmail())
-            .password(registerRequestDto.getPassword())
+            .passwordHash(registerRequestDto.getPassword())
             .firstName(registerRequestDto.getFirstName())
             .lastName(registerRequestDto.getLastName())
             .isVerified(false)

@@ -40,14 +40,17 @@ public class User {
   @Column(unique = true, nullable = false)
   private String email;
 
-  @Column(nullable = false)
-  private String password;
+  @Column(nullable = false,name = "password_hash")
+  private String passwordHash;
 
   @Column(nullable = false)
   private String firstName;
 
   private String lastName;
 
+  private int age;
+
+  @Column(name = "current_occupation")
   private String currentOccupation;
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -57,6 +60,7 @@ public class User {
   private LocalDate dateOfBirth;
 
   @Column(nullable = false)
+  @Builder.Default
   private boolean isVerified = false;
 
   @Enumerated(EnumType.STRING)
@@ -75,10 +79,12 @@ public class User {
   private List<UserGoal> userGoals;
 
   @Builder.Default
-  @Column(nullable = false)
+  @Column(nullable = false,name = "created_at")
   private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "updated_at")
   private LocalDateTime updatedAt;
+
   private LocalDateTime lastAccessTime;
 
   @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

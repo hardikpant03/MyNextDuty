@@ -22,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             .orElseThrow(() -> new UserNotFoundException("User not found: " + email));
     return CustomUserDetails.builder()
         .username(user.getEmail())
-        .password(user.getPassword())
+        .password(user.getPasswordHash())
         .build();
   }
 }
