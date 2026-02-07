@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Button from "../components/common/Button";
 import InputField from "../components/common/InputField";
 import formConfig from "../config/formConfig";
@@ -8,23 +8,21 @@ import logo from "../Image/mynextdutylogo.svg";
 
 import "./AuthPage.css";
 
+const buildInitialValues = (mode) => {
+  const values = {};
+  formConfig[mode].fields.forEach((field) => {
+    values[field.name] = "";
+  });
+  return values;
+};
+
 export const AuthPage = () => {
   const [mode, setMode] = useState("login");
-  const [values, setValues] = useState({});
+  const [values, setValues] = useState(buildInitialValues("login"));
   const [errors, setErrors] = useState({});
 
   const { login, signup, loading, error } = useAuth();
   const fields = formConfig[mode].fields;
-
-  /* 🔹 Initialize form values whenever mode changes */
-  useEffect(() => {
-    const initialValues = {};
-    fields.forEach((field) => {
-      initialValues[field.name] = "";
-    });
-    setValues(initialValues);
-    setErrors({});
-  }, [mode]);
 
   const handleChange = (name, value) => {
     setValues((prev) => ({ ...prev, [name]: value }));
@@ -61,10 +59,15 @@ export const AuthPage = () => {
     if (mode === "login") {
       await login(values);
     } else {
-      // ❌ backend does NOT need confirmPassword
       const { confirmPassword, ...signupPayload } = values;
       await signup(signupPayload);
     }
+  };
+
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
+    setValues(buildInitialValues(nextMode));
+    setErrors({});
   };
 
   return (
@@ -92,7 +95,7 @@ export const AuthPage = () => {
               label={field.label}
               type={field.type}
               placeholder={field.placeholder}
-              value={values[field.name] || ""}
+              value={values[field.name]}
               error={errors[field.name]}
               onChange={(e) => handleChange(field.name, e.target.value)}
             />
@@ -118,11 +121,11 @@ export const AuthPage = () => {
 
           <div className="auth-switch">
             {mode === "login" ? (
-              <button type="button" onClick={() => setMode("signup")}>
+              <button type="button" onClick={() => switchMode("signup")}>
                 New here? Create an account
               </button>
             ) : (
-              <button type="button" onClick={() => setMode("login")}>
+              <button type="button" onClick={() => switchMode("login")}>
                 Back to login
               </button>
             )}

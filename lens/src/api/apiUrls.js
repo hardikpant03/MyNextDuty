@@ -8,7 +8,6 @@ export const API_URLS = {
   },
   USER: {
     SIGNUP: "/auth/register",
-    PROFILE: "/auth/profile",
   },
   LOCATION: {
     USER: "/location/user",

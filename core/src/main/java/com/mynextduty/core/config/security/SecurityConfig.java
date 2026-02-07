@@ -51,8 +51,6 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**")
                     .permitAll()
-                    .requestMatchers("/auth/**","/location/**")
-                    .permitAll()
                     .anyRequest()
                     .authenticated())
         .sessionManagement(
