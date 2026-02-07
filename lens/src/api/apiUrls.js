@@ -12,5 +12,8 @@ export const API_URLS = {
   },
   LOCATION: {
     USER: "/location/user",
+    UPDATE: "/location/update",
+    NEARBY: "/location/nearby",
   },
+
 };
