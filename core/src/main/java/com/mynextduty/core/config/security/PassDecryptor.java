@@ -39,7 +39,7 @@ public class PassDecryptor {
 
   public String decryptPassword(String encryptedPassword) {
     try {
-      Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+      Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
       cipher.init(Cipher.DECRYPT_MODE, getPrivateKey());
       byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedPassword));
       return new String(decryptedBytes, StandardCharsets.UTF_8);
