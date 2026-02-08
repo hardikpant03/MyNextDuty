@@ -4,7 +4,7 @@ import { setupInterceptors } from "../service/interceptors";
 
 const api = axios.create({
   baseURL: CORE_BASE_URL,
-  withCredentials: true,
+   withCredentials: true,
 });
 
 setupInterceptors(api);

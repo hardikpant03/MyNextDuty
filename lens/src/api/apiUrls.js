@@ -7,10 +7,12 @@ export const API_URLS = {
     LOGOUT: "/auth/logout",
   },
   USER: {
-    SIGNUP: "/user/register",
-    PROFILE: "/user/profile",
+    SIGNUP: "/auth/register",
   },
   LOCATION: {
     USER: "/location/user",
+    UPDATE: "/location/update",
+    NEARBY: "/location/nearby",
   },
+
 };

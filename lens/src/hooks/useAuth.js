@@ -5,7 +5,7 @@ import {
   authLoginSuccess,
   authLoginFailure,
   authLogout,
-} from "../redux/actions/auth.actions";
+} from  "../redux/actions/auth.actions";;
 
 export const useAuth = () => {
   const dispatch = useDispatch();
