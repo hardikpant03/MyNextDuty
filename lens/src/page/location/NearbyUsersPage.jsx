@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useGeolocation } from "../hooks/useGeolocation";
-import LocationNearbyMap from "../components/map/LocationNearbyMap";
+import { useGeolocation } from "../../hooks/useGeolocation";
+import LocationNearbyMap from "../../components/map/LocationNearbyMap";
 import {
   updateUserLocation,
   getNearbyUsers,
-} from "../service/location.service";
+} from "../../service/location.service";
 
 const NearbyUsersPage = () => {
   const userId = Number(localStorage.getItem("userId"));

@@ -71,11 +71,12 @@ public class AuthServiceImpl implements AuthService {
   @Transactional
   public AuthResponseDto login(
       AuthRequestDto authRequestDto, HttpServletResponse httpServletResponse) {
+    CustomUserDetails customUserDetails =
+        (CustomUserDetails) customUserDetailsService.loadUserByUsername(authRequestDto.getEmail());
     try {
+      String decryptedPassword = passDecryptor.decryptPassword(authRequestDto.getPassword());
       authenticationManager.authenticate(
-          new UsernamePasswordAuthenticationToken(
-              authRequestDto.getEmail(),
-              passDecryptor.decryptPassword(authRequestDto.getPassword())));
+          new UsernamePasswordAuthenticationToken(authRequestDto.getEmail(), decryptedPassword));
     } catch (BadCredentialsException e) {
       log.warn("Bad credentials for user '{}'", authRequestDto.getEmail());
       throw new InvalidCredentialsException("Invalid credentials.");
@@ -90,8 +91,6 @@ public class AuthServiceImpl implements AuthService {
                 });
     user.setLastAccessTime(LocalDateTime.now());
     userRepository.save(user);
-    CustomUserDetails customUserDetails =
-        (CustomUserDetails) customUserDetailsService.loadUserByUsername(authRequestDto.getEmail());
     String token = jwtUtil.generateToken(customUserDetails);
     String refreshToken = jwtUtil.generateRefreshToken(customUserDetails);
     log.info("User '{}' logged in successfully", authRequestDto.getEmail());

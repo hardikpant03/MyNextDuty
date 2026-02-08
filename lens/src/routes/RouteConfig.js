@@ -1,7 +1,7 @@
 import { Root } from "../layout/Root";
 import Loader from "../components/common/Loader";
-import AuthPage from "../page/AuthPage";
-import NearbyUsersPage from "../page/NearbyUsersPage";
+import AuthPage from "../page/auth/AuthPage";
+import NearbyUsersPage from "../page/location/NearbyUsersPage";
 export const PrivateRouteConfig = [
   {
     key: "Root",

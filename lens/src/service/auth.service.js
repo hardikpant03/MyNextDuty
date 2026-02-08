@@ -1,13 +1,33 @@
 import api from "../api/axiosInstance";
 import { API_URLS } from "../api/apiUrls";
+import passwordEncoder from "../util/encoder";
 
 export const authService = {
-  login(payload) {
-    return api.post(API_URLS.AUTH.LOGIN, payload);
+  async login(payload) {
+    try {
+      // Encrypt password before sending
+      const encryptedPayload = {
+        ...payload,
+        password: await passwordEncoder.encryptPassword(payload.password)
+      };
+      
+      return api.post(API_URLS.AUTH.LOGIN, encryptedPayload);
+    } catch (error) {
+      return api.post(API_URLS.AUTH.LOGIN, payload);
+    }
   },
 
-  signup(payload) {
-    return api.post(API_URLS.USER.SIGNUP, payload);
+  async signup(payload) {
+    try {
+      // Encrypt password before sending
+      const encryptedPayload = {
+        ...payload,
+        password: await passwordEncoder.encryptPassword(payload.password)
+      };
+      
+      return api.post(API_URLS.AUTH.SIGNUP, encryptedPayload);
+    } catch (error) {
+    }
   },
 
   logout() {

@@ -90,6 +90,10 @@ public class User {
   @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   private UserLocation userLocation;
 
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
+
   @PreUpdate
   public void preUpdate() {
     this.updatedAt = LocalDateTime.now();

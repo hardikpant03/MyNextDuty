@@ -21,7 +21,7 @@ public class CustomUserDetails implements UserDetails {
   private final String username;
   private final String password;
   private final String role;
-  private final boolean enabled;
+  private final boolean isVerified;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -45,6 +45,6 @@ public class CustomUserDetails implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    return enabled;
+    return isVerified;
   }
 }

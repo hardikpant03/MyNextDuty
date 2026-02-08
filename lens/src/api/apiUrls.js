@@ -5,14 +5,12 @@ export const API_URLS = {
     LOGIN: "/auth/login",
     REFRESH: "/auth/refresh",
     LOGOUT: "/auth/logout",
-  },
-  USER: {
     SIGNUP: "/auth/register",
   },
+  USER: {},
   LOCATION: {
     USER: "/location/user",
     UPDATE: "/location/update",
     NEARBY: "/location/nearby",
   },
-
 };

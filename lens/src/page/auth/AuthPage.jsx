@@ -1,10 +1,10 @@
 import { useState } from "react";
-import Button from "../components/common/Button";
-import InputField from "../components/common/InputField";
-import formConfig from "../config/formConfig";
-import { useAuth } from "../hooks/useAuth";
-import Loader from "../components/common/Loader";
-import logo from "../Image/mynextdutylogo.svg";
+import Button from "../../components/common/Button";
+import InputField from "../../components/common/InputField";
+import formConfig from "../../config/formConfig";
+import { useAuth } from "../../hooks/useAuth";
+import Loader from "../../components/common/Loader";
+import logo from "../../assets/mynextdutylogo.svg"
 
 import "./AuthPage.css";
 
@@ -56,11 +56,21 @@ export const AuthPage = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    if (mode === "login") {
-      await login(values);
-    } else {
-      const { confirmPassword, ...signupPayload } = values;
-      await signup(signupPayload);
+    try {
+      if (mode === "login") {
+        await login(values);
+      } else {
+        const { confirmPassword, ...signupPayload } = values;
+        const result = await signup(signupPayload);
+        
+        // If signup is successful, switch to login mode
+        if (result?.success) {
+          switchMode("login");
+        }
+      }
+    } catch (error) {
+      // Error handling is done in the useAuth hook with toast messages
+      console.error("Auth error:", error);
     }
   };
 

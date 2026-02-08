@@ -1,7 +1,9 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import { PrivateRouteConfig } from "./routes/RouteConfig";
 import NavigationProvider from "../src/layout/NavigationProvider";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   return (
@@ -16,6 +18,18 @@ const App = () => {
             </Route>
           ))}
         </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </NavigationProvider>
     </BrowserRouter>
   );

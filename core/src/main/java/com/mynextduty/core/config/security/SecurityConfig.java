@@ -16,15 +16,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -50,11 +48,11 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(HttpMethod.OPTIONS, "/**")
-                        .permitAll()
-                        .requestMatchers("/auth/**")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
+                    .permitAll()
+                    .requestMatchers("/auth/**")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider())
@@ -92,11 +90,11 @@ public class SecurityConfig {
   /**
    * Creating Bean of Password Encoder
    *
-   * @return Bean of BCryptPasswordEncoder
+   * @return Bean of Argon2PasswordEncoder
    */
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
   }
 
   /**
@@ -107,7 +105,7 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     var config = new CorsConfiguration();
-    config.setAllowedOrigins(List.of("http://localhost:5173"));
+    config.addAllowedOrigin("http://localhost:5173");
     config.addAllowedHeader("*");
     config.addAllowedMethod(HttpMethod.PUT);
     config.addAllowedMethod(HttpMethod.POST);

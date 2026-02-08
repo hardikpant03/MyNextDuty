@@ -1,5 +1,6 @@
 package com.mynextduty.core.service.impl;
 
+import com.mynextduty.core.config.security.PassDecryptor;
 import com.mynextduty.core.dto.GlobalMessageDto;
 import com.mynextduty.core.dto.user.UserRegisterRequestDto;
 import com.mynextduty.core.entity.User;
@@ -11,6 +12,7 @@ import com.mynextduty.core.service.VerificationService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,8 @@ public class UserAccountServiceImpl implements UserAccountService {
   private final UserRepository userRepository;
   private final VerificationService verificationService;
   private final CurrentUserService currentUserService;
+  private final PassDecryptor passDecryptor;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   @Transactional
@@ -29,11 +33,12 @@ public class UserAccountServiceImpl implements UserAccountService {
     if (userRepository.findByEmail(registerRequestDto.getEmail()).isPresent()) {
       throw new GenericApplicationException("User already exists.", 409);
     }
-
     User user =
         User.builder()
             .email(registerRequestDto.getEmail())
-            .passwordHash(registerRequestDto.getPassword())
+            .passwordHash(
+                passwordEncoder.encode(
+                    passDecryptor.decryptPassword(registerRequestDto.getPassword())))
             .firstName(registerRequestDto.getFirstName())
             .lastName(registerRequestDto.getLastName())
             .isVerified(false)
